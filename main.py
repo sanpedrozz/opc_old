@@ -8,7 +8,6 @@ from worker import Worker
 from db.db_worker import DBWorker
 from config import Config
 
-print(1)
 if __name__ == '__main__':
     try:
         server = mp.Process(target=web.run_app, args=(app, ), kwargs={'port': 8081})
