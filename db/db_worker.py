@@ -45,8 +45,8 @@ class DBWorker:
                     for pid in pids:
                         pid_tasks = [task for task in tasks_to_queue if task.pid == pid]
                         pid_tasks.sort(key=lambda task: task.i)
-
-                #         self.queue_client.add_tasks(robot, pid_tasks)
+                        self.queue_client.add_tasks(robot, pid_tasks)
+                        print(11111111)
                 #         query = f"UPDATE tasks SET status = 1 WHERE pid = '{pid}'"
                 #         self.connection.execute_query(query)
                 #         self.connection.connect.commit()

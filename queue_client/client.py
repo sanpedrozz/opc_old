@@ -49,11 +49,10 @@ class RedisClient:
 
     def get_status(self, robot_name: str) -> int:
         status = self.client.get(f'{robot_name}_status')
-
         return int(status) if status is not None else 0
 
     def add_tasks(self, pid: str, tasks: List):
-        tasks = [json.dumps(task) for task in tasks]
+        tasks = [json.dumps(task, ensure_ascii=False, default=str) for task in tasks]
         return self.client.rpush(pid, *tasks)
 
     def add_db_queue_task(self, task: Task):
