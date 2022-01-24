@@ -26,27 +26,31 @@ class DBWorker:
 
     def get_tasks_from_db(self):
         """test function"""
-        for plc in self.plcs:
-            for i in range(plc['robot_quantity']):
-                robot = f'{plc["name"]}{i + 1}'
-                query = "SELECT task, pid, i, device, zone_out, zone_in, qty, cover, depth, status, dcreate " \
-                        f"FROM tasks WHERE device = '{robot}' AND status = 0 ORDER BY i"
-                tasks = self.connection.fetchall_query(query)
-                tasks_to_queue = [Task(task) for task in tasks]
-                pids = {task.pid for task in tasks_to_queue}
-                for pid in pids:
-                    pid_tasks = [task for task in tasks_to_queue if task.pid == pid]
-                    pid_tasks.sort(key=lambda task: task.i)
+        try:
+            for plc in self.plcs:
+                for i in range(plc['robot_quantity']):
+                    robot = f'{plc["name"]}{i + 1}'
+                    query = "SELECT task, pid, i, device, zone_out, zone_in, qty, cover, depth, status, dcreate " \
+                            f"FROM tasks WHERE device = '{robot}' AND status = 0 ORDER BY i"
+                    tasks = self.connection.fetchall_query(query)
+                    tasks_to_queue = [Task(task) for task in tasks]
+                    pids = {task.pid for task in tasks_to_queue}
+                    print(pids)
+                    # for pid in pids:
+                    #     pid_tasks = [task for task in tasks_to_queue if task.pid == pid]
+                    #     pid_tasks.sort(key=lambda task: task.i)
+                    #
+                    #     self.queue_client.add_pid_to_queue(robot, pid)
+                    #     self.queue_client.add_tasks(pid, pid_tasks)
+                    #
+                    #     query = f"UPDATE tasks SET status = 1 WHERE pid = '{pid}'"
+                    #
+                    #     self.connection.execute_query(query)
+                    #     self.connection.connect.commit()
 
-                    self.queue_client.add_pid_to_queue(robot, pid)
-                    self.queue_client.add_tasks(pid, pid_tasks)
-
-                    query = f"UPDATE tasks SET status = 1 WHERE pid = '{pid}'"
-
-                    self.connection.execute_query(query)
-                    self.connection.connect.commit()
-
-                pprint(tasks)
+                    # pprint(tasks)
+        except Exception as error:
+            logger.warning(f'DB worker error {error}')
 
     def get_tasks_to_update(self):
         pass
@@ -69,12 +73,6 @@ class DBWorker:
     def run(self):
         while True:
             try:
-                # task = self.get_task_to_insert()
-                # if task is None:
-                #     sleep(5)
-                #     continue
-                # self.insert_task(task)
-                # self.remove_task()
                 self.get_tasks_from_db()
                 sleep(100500)
 
@@ -84,5 +82,5 @@ class DBWorker:
                 sleep(15)
 
     def get_devices(self):
-        query = "SELECT name, ip, robot_quantity FROM robots WHERE active = 1"
+        query = "SELECT name, ip, robot_quantity FROM robots_config WHERE active = 1"
         self.plcs = self.connection.fetchall_query(query)
