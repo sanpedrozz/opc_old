@@ -9,14 +9,14 @@ from logs.logger import logger
 
 
 class DBWorker:
-    def __init__(self, plcs):
-        self.connection = DBConnector(db_name=Config.DB_NAME,
-                                      user=Config.DB_USER,
-                                      psw=Config.DB_PASSWORD,
-                                      host=Config.DB_HOST,
-                                      port=Config.DB_PORT)
+    def __init__(self):
+        self.connection = DBConnector(db_name=Config.DB["db_name"],
+                                      user=Config.DB["user"],
+                                      psw=Config.DB["psw"],
+                                      host=Config.DB["host"],
+                                      port=Config.DB["port"])
         self.queue_client = RedisClient()
-        self.plcs = plcs
+        self.plcs = []
 
     def get_task_to_insert(self) -> Task:
         return self.queue_client.get_db_queue_task()
@@ -82,3 +82,7 @@ class DBWorker:
                 logger.warning(f'DB worker error {error}')
                 self.connection.connect.rollback()
                 sleep(15)
+
+    def get_devices(self):
+        query = "SELECT name, ip, robot_quantity FROM robots WHERE active = 1"
+        self.plcs = self.connection.fetchall_query(query)

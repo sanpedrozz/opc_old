@@ -17,7 +17,7 @@ class DBConnector:
 
     def fetchall_query(self, query):
         self.execute_query(query)
-        return self.cursor.fetchall()
+        return [dict(row) for row in self.cursor.fetchall()][0]
 
     def insert_query(self, query):
         result = self.execute_query(query)
