@@ -17,8 +17,8 @@ if __name__ == '__main__':
         db_worker = DBWorker()
         db_worker.get_devices()
         # db_worker.run()
-        db_worker_process = mp.Process(target=db_worker.run)
-        db_worker_process.start()
+        # db_worker_process = mp.Process(target=db_worker.run)
+        # db_worker_process.start()
 
         # for plc in db_worker.plcs:
         #     worker = Worker(**plc)
