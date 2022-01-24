@@ -1,5 +1,7 @@
 from pprint import pprint
 from time import sleep
+import traceback
+
 
 from db.sql import DBConnector
 from queue_client.client import RedisClient
@@ -10,13 +12,18 @@ from logs.logger import logger
 
 class DBWorker:
     def __init__(self):
-        self.connection = DBConnector(db_name=Config.DB["db_name"],
-                                      user=Config.DB["user"],
-                                      psw=Config.DB["psw"],
-                                      host=Config.DB["host"],
-                                      port=Config.DB["port"])
+        self.connection = DBConnector(db_name=Config.DB_NAME,
+                                      user=Config.DB_USER,
+                                      psw=Config.DB_PASSWORD,
+                                      host=Config.DB_HOST,
+                                      port=Config.DB_PORT)
         self.queue_client = RedisClient()
         self.plcs = []
+
+    def get_devices(self):
+        """get devices from database"""
+        query = "SELECT name, ip, robot_quantity FROM robots_config WHERE active = 1"
+        self.plcs = self.connection.fetchall_query(query)
 
     def get_task_to_insert(self) -> Task:
         return self.queue_client.get_db_queue_task()
@@ -35,22 +42,19 @@ class DBWorker:
                     tasks = self.connection.fetchall_query(query)
                     tasks_to_queue = [Task(task) for task in tasks]
                     pids = {task.pid for task in tasks_to_queue}
-                    print(pids)
-                    # for pid in pids:
-                    #     pid_tasks = [task for task in tasks_to_queue if task.pid == pid]
-                    #     pid_tasks.sort(key=lambda task: task.i)
-                    #
-                    #     self.queue_client.add_pid_to_queue(robot, pid)
-                    #     self.queue_client.add_tasks(pid, pid_tasks)
+                    for pid in pids:
+                        pid_tasks = [task for task in tasks_to_queue if task.pid == pid]
+                        pid_tasks.sort(key=lambda task: task.i)
+                        self.queue_client.add_tasks(robot, pid_tasks)
                     #
                     #     query = f"UPDATE tasks SET status = 1 WHERE pid = '{pid}'"
                     #
                     #     self.connection.execute_query(query)
                     #     self.connection.connect.commit()
-
+                    #
                     # pprint(tasks)
         except Exception as error:
-            logger.warning(f'DB worker error {error}')
+            logger.warning(f'DB worker error {error}:\n\n {traceback.format_exc()}\n')
 
     def get_tasks_to_update(self):
         pass
@@ -77,10 +81,7 @@ class DBWorker:
                 sleep(100500)
 
             except Exception as error:
-                logger.warning(f'DB worker error {error}')
+                logger.warning(f'DB worker error {error}:\n\n {traceback.format_exc()}\n')
                 self.connection.connect.rollback()
                 sleep(15)
 
-    def get_devices(self):
-        query = "SELECT name, ip, robot_quantity FROM robots_config WHERE active = 1"
-        self.plcs = self.connection.fetchall_query(query)
