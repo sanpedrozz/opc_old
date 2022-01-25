@@ -38,7 +38,6 @@ class RedisClient:
 
     def get_task(self, robot_name: str) -> Task:
         task = self.client.lrange(robot_name, 0, 1)
-
         return Task(json.loads(task[0])) if task else None
 
     def remove_task(self, robot_name: str):
@@ -52,7 +51,7 @@ class RedisClient:
         return int(status) if status is not None else 0
 
     def add_tasks(self, pid: str, tasks: List):
-        tasks = [json.dumps(task, ensure_ascii=False, default=str) for task in tasks]
+        tasks = [pickle.dumps(task) for task in tasks]
         return self.client.rpush(pid, *tasks)
 
     def add_db_queue_task(self, task: Task):
