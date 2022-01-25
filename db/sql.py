@@ -1,4 +1,5 @@
 import psycopg2
+from pprint import pprint
 from psycopg2.extras import RealDictCursor
 
 
@@ -12,14 +13,10 @@ class DBConnector:
                                         cursor_factory=RealDictCursor)
         self.cursor = self.connect.cursor()
 
-    def execute_query(self, query):
-        return self.cursor.execute(query)
-
     def fetchall_query(self, query):
         self.execute_query(query)
         return self.cursor.fetchall()
 
     def insert_query(self, query):
-        result = self.execute_query(query)
+        self.cursor.execute(query)
         self.connect.commit()
-        return result
