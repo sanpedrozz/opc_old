@@ -1,4 +1,3 @@
-import json
 import pickle
 from functools import wraps
 from typing import List
@@ -25,20 +24,9 @@ class RedisClient:
     def __init__(self):
         self.client = Redis()
 
-    # def add_pid_to_queue(self, robot_name: str, pid: str):
-    #     return self.client.rpush(robot_name, pid)
-    #
-    # def get_pid(self, robot_name: str):
-    #     pid = self.client.lrange(robot_name, 0, 1)
-    #
-    #     return pid[0] if pid else None
-
-    # def remove_pid(self, robot_name: str):
-    #     return self.client.lpop(robot_name)
-
-    def get_task(self, robot_name: str) -> Task:
+    def get_task(self, robot_name: str):
         task = self.client.lrange(robot_name, 0, 1)
-        return Task(json.loads(task[0])) if task else None
+        return pickle.loads(task[0]) if task else None
 
     def remove_task(self, robot_name: str):
         return self.client.lpop(robot_name)
