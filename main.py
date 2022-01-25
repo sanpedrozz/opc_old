@@ -26,6 +26,5 @@ if __name__ == '__main__':
         #     worker_process.start()
 
 
-
     except Exception as error:
         logger.error(error)

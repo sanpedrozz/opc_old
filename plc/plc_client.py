@@ -1,5 +1,6 @@
 from functools import wraps
 from time import sleep
+import traceback
 
 import snap7
 from snap7.exceptions import Snap7Exception
@@ -31,7 +32,7 @@ def reconnect_on_fail(func):
                 self.connect()
 
             except Snap7Exception as error:
-                logger.warning(f'PLC error: {error}')
+                logger.warning(f'PLC error: {error}:\n\n {traceback.format_exc()}\n')
                 self.disconnect()
                 sleep(5)
 

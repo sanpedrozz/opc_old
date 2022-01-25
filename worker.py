@@ -178,6 +178,7 @@ class Worker:
         for i in range(0, self.robot_quantity):
 
             robot = Robot(f'{self.name}{i + 1}', self.ip, DB_TAGS + i)
+            print(robot)
             self.robots.append(robot)
 
             logger.info(f'robot {self.name}{i + 1} created')

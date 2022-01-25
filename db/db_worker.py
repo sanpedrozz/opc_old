@@ -37,20 +37,22 @@ class DBWorker:
             for plc in self.plcs:
                 for i in range(plc['robot_quantity']):
                     robot = f'{plc["name"]}{i + 1}'
-                    query = "SELECT task, pid, i, device, zone_out, zone_in, qty, cover, depth, status, dcreate " \
+                    query = "SELECT task, pid, i, device, zone_out, zone_in, qty, cover, depth, status " \
                             f"FROM tasks WHERE device = '{robot}' AND status = 0 AND stage = 0 ORDER BY i"
                     tasks = self.connection.fetchall_query(query)
-                    tasks_to_queue = [Task(task) for task in tasks]
-                    pids = {task.pid for task in tasks_to_queue}
+
+                    # tasks_to_queue = [Task(task) for task in tasks]
+                    pids = {task['pid'] for task in tasks}
                     for pid in pids:
-                        pid_tasks = [task for task in tasks_to_queue if task.pid == pid]
-                        pid_tasks.sort(key=lambda task: task.i)
+                        pid_tasks = [task for task in tasks if task['pid'] == pid]
+
+                        pid_tasks.sort(key=lambda task: task['i'])
+
                         self.queue_client.add_tasks(robot, pid_tasks)
-                        print(11111111)
-                #         query = f"UPDATE tasks SET status = 1 WHERE pid = '{pid}'"
-                #         self.connection.execute_query(query)
-                #         self.connection.connect.commit()
-                #     pprint(tasks)
+                    #     query = f"UPDATE tasks SET stage = 1 WHERE pid = '{pid}'"
+                    #     self.connection.execute_query(query)
+                    #     self.connection.connect.commit()
+                    # pprint(tasks)
         except Exception as error:
             logger.warning(f'DB worker error {error}:\n\n {traceback.format_exc()}\n')
 
